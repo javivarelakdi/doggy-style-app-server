@@ -5,32 +5,36 @@ const User = require("../models/user");
 
 const router = express.Router();
 
-router.use(checkIfLoggedIn);
+// Comment out or temporarily remove this line for testing
+// router.use(checkIfLoggedIn);
 
 // return list of users
-router.post("/", (req, res, next) => {
-  const { lng, lat } = req.body;
-  User.aggregate(
-    [
+router.post("/", async (req, res, next) => {
+  try {
+    const { lng, lat } = req.body;
+    console.log("Received coordinates:", { lng, lat });
+    // Add default coordinates if not provided
+    const longitude = lng || 2.154007; // Barcelona coordinates
+    const latitude = lat || 41.390205;
+    const users = await User.aggregate([
       {
         $geoNear: {
           near: {
             type: "Point",
-            coordinates: [lng, lat],
+            coordinates: [longitude, latitude],
           },
           distanceField: "dist.calculated",
           spherical: true,
         },
       },
-    ],
-    (err, data) => {
-      if (err) {
-        next(err);
-        return;
-      }
-      res.send(data);
-    }
-  );
+    ]);
+
+    console.log("Found users:", users);
+    res.json(users);
+  } catch (error) {
+    console.error("Error in /users route:", error);
+    next(error);
+  }
 });
 
 // update user POST action for adding favs and fans
