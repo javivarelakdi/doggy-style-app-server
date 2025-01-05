@@ -23,7 +23,7 @@ router.post("/", async (req, res, next) => {
             type: "Point",
             coordinates: [longitude, latitude],
           },
-          distanceField: "dist.calculated",
+          distanceField: "distance",
           spherical: true,
         },
       },
